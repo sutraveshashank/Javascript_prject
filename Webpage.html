@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trainer & Subject Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    h2 {
+      color: #333;
+    }
+    form {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+    }
+    .response {
+      background: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Add Trainer</h2>
+  <form id="addTrainerForm">
+    <input type="text" id="trainerName" placeholder="Name" required />
+    <input type="text" id="empId" placeholder="Employee ID" required />
+    <input type="text" id="subject" placeholder="Subject" required />
+    <button type="submit">Add Trainer</button>
+  </form>
+
+  <h2>All Trainers</h2>
+  <button onclick="getAllTrainers()">Get Trainers</button>
+  <div id="trainersList" class="response"></div>
+
+  <h2>Delete Trainer</h2>
+  <form id="deleteTrainerForm">
+    <input type="text" id="deleteEmpId" placeholder="Employee ID" required />
+    <button type="submit">Delete Trainer</button>
+  </form>
+
+  <h2>Find Trainer by ID</h2>
+  <form id="getTrainerByIdForm">
+    <input type="text" id="getTrainerId" placeholder="Employee ID" required />
+    <button type="submit">Find Trainer</button>
+  </form>
+  <div id="trainerById" class="response"></div>
+
+  <h2>Find Trainers by Subject</h2>
+  <form id="getTrainerBySubjectForm">
+    <input type="text" id="subjectQuery" placeholder="Subject" required />
+    <button type="submit">Find Trainers</button>
+  </form>
+  <div id="trainerBySubject" class="response"></div>
+
+  <h2>Add Subject</h2>
+  <form id="addSubjectForm">
+    <input type="text" id="subjectName" placeholder="Subject Name" required />
+    <input type="text" id="subjectId" placeholder="Subject ID" required />
+    <button type="submit">Add Subject</button>
+  </form>
+
+  <h2>All Subjects</h2>
+  <button onclick="getAllSubjects()">Get Subjects</button>
+  <div id="subjectsList" class="response"></div>
+
+  <h2>Get Subject with Trainers</h2>
+  <form id="getSubjectWithTrainersForm">
+    <input type="text" id="subjectIdQuery" placeholder="Subject ID" required />
+    <button type="submit">Get Info</button>
+  </form>
+  <div id="subjectWithTrainers" class="response"></div>
+
+  <script>
+    const API_URL = 'http://localhost:3000'; // Adjust based on backend location
+
+    document.getElementById('addTrainerForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('trainerName').value,
+        empId: document.getElementById('empId').value,
+        subject: document.getElementById('subject').value
+      };
+      try {
+        const res = await fetch(`${API_URL}/trainer`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        alert('Trainer added');
+      } catch (error) {
+        console.error('Error adding trainer:', error);
+        alert('Failed to add trainer');
+      }
+    };
+
+    function getAllTrainers() {
+      fetch(`${API_URL}/trainer`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById('trainersList').innerText = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+          console.error('Error fetching trainers:', error);
+          document.getElementById('trainersList').innerText = 'Failed to fetch trainers';
+        });
+    }
+
+    document.getElementById('deleteTrainerForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const empId = document.getElementById('deleteEmpId').value;
+      try {
+        const res = await fetch(`${API_URL}/trainer`, {
+          method: 'DELETE',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ empId })
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        alert('Trainer deleted');
+      } catch (error) {
+        console.error('Error deleting trainer:', error);
+        alert('Failed to delete trainer');
+      }
+    };
+
+    document.getElementById('getTrainerByIdForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('getTrainerId').value;
+      try {
+        const res = await fetch(`${API_URL}/trainer/${id}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        document.getElementById('trainerById').innerText = JSON.stringify(data, null, 2);
+      } catch (error) {
+        console.error('Error fetching trainer by ID:', error);
+        document.getElementById('trainerById').innerText = 'Failed to fetch trainer';
+      }
+    };
+
+    document.getElementById('getTrainerBySubjectForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const subject = document.getElementById('subjectQuery').value;
+      try {
+        const res = await fetch(`${API_URL}/trainer/${subject}/topic`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        document.getElementById('trainerBySubject').innerText = JSON.stringify(data, null, 2);
+      } catch (error) {
+        console.error('Error fetching trainers by subject:', error);
+        document.getElementById('trainerBySubject').innerText = 'Failed to fetch trainers';
+      }
+    };
+
+    document.getElementById('addSubjectForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = {
+        subjectId: document.getElementById('subjectId').value,
+        name: document.getElementById('subjectName').value
+      };
+      try {
+        const res = await fetch(`${API_URL}/subject`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        alert('Subject added');
+      } catch (error) {
+        console.error('Error adding subject:', error);
+        alert('Failed to add subject');
+      }
+    };
+
+    function getAllSubjects() {
+      fetch(`${API_URL}/subject`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById('subjectsList').innerText = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+          console.error('Error fetching subjects:', error);
+          document.getElementById('subjectsList').innerText = 'Failed to fetch subjects';
+        });
+    }
+
+    document.getElementById('getSubjectWithTrainersForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('subjectIdQuery').value;
+      try {
+        const res = await fetch(`${API_URL}/subject/${id}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        document.getElementById('subjectWithTrainers').innerText = JSON.stringify(data, null, 2);
+      } catch (error) {
+        console.error('Error fetching subject with trainers:', error);
+        document.getElementById('subjectWithTrainers').innerText = 'Failed to fetch subject info';
+      }
+    };
+  </script>
+</body>
+</html>
